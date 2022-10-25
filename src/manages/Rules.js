@@ -340,7 +340,7 @@ function Rules() {
             </div>
             <Modal
               title="Sửa luật"
-              visible={showEdit}
+              open={showEdit}
               onOk={() => setShowEdit(false)}
               onCancel={() => setShowEdit(false)}
               footer={null}

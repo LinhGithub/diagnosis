@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Typography, Button, Modal, Form, Input,Select } from "antd";
+import { Typography, Button, Modal, Form, Input, Select } from "antd";
 import { Space, Card, List, message, Popconfirm, Spin } from "antd";
 import {
   AlertOutlined,
@@ -230,7 +230,7 @@ function Symptoms() {
             </div>
             <Modal
               title="Sửa triệu chứng"
-              visible={showEdit}
+              open={showEdit}
               onOk={() => setShowEdit(false)}
               onCancel={() => setShowEdit(false)}
               footer={null}

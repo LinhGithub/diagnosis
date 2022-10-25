@@ -230,7 +230,7 @@ function Illnesses() {
             </div>
             <Modal
               title="Sửa bệnh"
-              visible={showEdit}
+              open={showEdit}
               onOk={() => setShowEdit(false)}
               onCancel={() => setShowEdit(false)}
               footer={null}
