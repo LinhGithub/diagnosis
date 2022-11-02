@@ -4,6 +4,8 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import Overview from "./components/Overview";
 import Diagnosis from "./components/Diagnosis";
 import Chat from "./components/Chat";
+import Signin from "./components/Signin";
+import ProfileAccount from "./components/ProfileAccount";
 
 import Illnesses from "./manages/Illnesses";
 import Symptoms from "./manages/Symptoms";
@@ -18,6 +20,8 @@ const AppRoutes = () => {
       <Route path="/illnesses" element={<Illnesses></Illnesses>} />
       <Route path="/symptoms" element={<Symptoms></Symptoms>} />
       <Route path="/rules" element={<Rules></Rules>} />
+      <Route path="/signin" element={<Signin></Signin>} />
+      <Route path="/profile" element={<ProfileAccount></ProfileAccount>} />
       <Route path="*" element={<Navigate to="/overview" replace />} />
     </Routes>
   );

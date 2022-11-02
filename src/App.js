@@ -24,7 +24,7 @@ const App = () => {
   );
 
   const onRouteChanged = () => {
-    const urlHidden = ["/illnesses", "/symptoms", '/rules'];
+    const urlHidden = [""];
     if (urlHidden.includes(location.pathname)) {
       setShowNavigate(true);
     } else {
@@ -34,7 +34,7 @@ const App = () => {
 
   useEffect(() => {
     onRouteChanged();
-  },[]);
+  }, []);
 
   return (
     <div>

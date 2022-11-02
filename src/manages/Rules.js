@@ -26,7 +26,7 @@ function Rules() {
   // get name property rules
   const getName = (id) => {
     var find = dataIllnesses.find((item) => item._id === id);
-    return find.name ? find.name : "";
+    return find?.name ? find?.name : "";
   };
   // ===
 
