@@ -234,6 +234,7 @@ function Symptoms() {
               onOk={() => setShowEdit(false)}
               onCancel={() => setShowEdit(false)}
               footer={null}
+              forceRender
             >
               <Form form={formEdit} onFinish={handelUpdateSymptom}>
                 <Form.Item
