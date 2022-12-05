@@ -6,6 +6,7 @@ import Diagnosis from "./components/Diagnosis";
 import Chat from "./components/Chat";
 import Signin from "./components/Signin";
 import ProfileAccount from "./components/ProfileAccount";
+import ConnectMap from "./components/ConnectMap";
 
 import Illnesses from "./manages/Illnesses";
 import Symptoms from "./manages/Symptoms";
@@ -22,6 +23,7 @@ const AppRoutes = () => {
       <Route path="/rules" element={<Rules></Rules>} />
       <Route path="/signin" element={<Signin></Signin>} />
       <Route path="/profile" element={<ProfileAccount></ProfileAccount>} />
+      <Route path="/map" element={<ConnectMap></ConnectMap>} />
       <Route path="*" element={<Navigate to="/overview" replace />} />
     </Routes>
   );

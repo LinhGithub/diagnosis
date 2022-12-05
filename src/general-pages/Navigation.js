@@ -10,6 +10,7 @@ import {
   LoginOutlined,
   LogoutOutlined,
   UserOutlined,
+  EnvironmentOutlined,
 } from "@ant-design/icons";
 import { Layout, Menu, Image } from "antd";
 import React, { useEffect, useState } from "react";
@@ -29,6 +30,7 @@ const ListRoutes = [
   "signin",
   "signout",
   "profile",
+  "map",
 ];
 
 function Navigation({ collapsed, setCollapsed }) {
@@ -94,6 +96,12 @@ function Navigation({ collapsed, setCollapsed }) {
       icon: <LogoutOutlined />,
       label: "Sign Out",
       hidden: true,
+    },
+    {
+      key: "map",
+      icon: <EnvironmentOutlined />,
+      label: "Bản đồ",
+      hidden: false,
     },
   ]);
 
@@ -172,6 +180,7 @@ function Navigation({ collapsed, setCollapsed }) {
           "signin",
           "signout",
           "profile",
+          "map",
         ].includes(option.key)
       ) {
         setKeyDefault("overview");
