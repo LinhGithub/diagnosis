@@ -4,7 +4,10 @@ import { Typography } from "antd";
 import Map from "./Map";
 
 function ConnectMap() {
-  const key = "yourKey";
+  // const key = "AIzaSyDWTx7bREpM5B6JKdbzOvMW-RRlhkukmVE";
+  // const key = "AIzaSyDNI_ZWPqvdS6r6gPVO50I4TlYkfkZdXh8";
+  // const key = "AIzaSyDaOulQACiJzBfqumbsqg_-vKha8fCnL-s";
+  const key = "AIzaSyDc7PnOq3Hxzq6dxeUVaY8WGLHIePl0swY";
   return (
     <div>
       <Typography.Title level={4}>Bản đồ</Typography.Title>
