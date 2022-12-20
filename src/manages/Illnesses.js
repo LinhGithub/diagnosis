@@ -37,15 +37,16 @@ function Illnesses() {
   // -update illness
   const handelUpdateIllness = (values) => {
     if (illnessesSelect) {
-      var bodyFormData = new FormData();
-      bodyFormData.append("name", values.name);
-      bodyFormData.append("rule", values.rule);
+      var data_json = {
+        name: values.name,
+        rule: values.rule,
+      };
 
       const requestOptions = {
         method: "PUT",
         url: urlAPI + `/illnesses/${illnessesSelect._id}`,
-        headers: { "Content-Type": "multipart/form-data" },
-        data: bodyFormData,
+        headers: { "Content-Type": "application/json" },
+        data: JSON.stringify(data_json),
       };
 
       axios(requestOptions)
@@ -90,22 +91,25 @@ function Illnesses() {
   };
 
   useEffect(() => {
-    formAdd.setFieldValue("name", "");
-    formAdd.setFieldValue("rule", "only");
+    if (formAdd) {
+      formAdd.setFieldValue("name", "");
+      formAdd.setFieldValue("rule", "only");
+    }
   }, [isReload, formAdd]);
 
   // insert illness
   const handleAddIllness = (values) => {
-    var bodyFormData = new FormData();
-    bodyFormData.append("name", values.name);
-    bodyFormData.append("type", "illness");
-    bodyFormData.append("rule", values.rule);
+    var data_json = {
+      name: values.name,
+      type: "illness",
+      rule: values.rule,
+    };
 
     const requestOptions = {
       method: "POST",
       url: urlAPI + `/illnesses`,
-      headers: { "Content-Type": "multipart/form-data" },
-      data: bodyFormData,
+      headers: { "Content-Type": "application/json" },
+      data: JSON.stringify(data_json),
     };
 
     axios(requestOptions)
@@ -230,7 +234,7 @@ function Illnesses() {
             </div>
             <Modal
               title="Sửa bệnh"
-              open={showEdit}
+              visible={showEdit}
               onOk={() => setShowEdit(false)}
               onCancel={() => setShowEdit(false)}
               footer={null}

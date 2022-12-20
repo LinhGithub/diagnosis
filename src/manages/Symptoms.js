@@ -37,14 +37,16 @@ function Symptoms() {
   // -update symptom
   const handelUpdateSymptom = (values) => {
     if (symptomSelect) {
-      var bodyFormData = new FormData();
-      bodyFormData.append("name", values.name);
-      bodyFormData.append("rule", values.rule);
+      var data_json = {
+        name: values.name,
+        rule: values.rule,
+      };
 
       const requestOptions = {
         method: "PUT",
         url: urlAPI + `/illnesses/${symptomSelect._id}`,
-        data: bodyFormData,
+        headers: { "Content-Type": "application/json" },
+        data: JSON.stringify(data_json),
       };
 
       axios(requestOptions)
@@ -95,15 +97,17 @@ function Symptoms() {
 
   // insert symptom
   const handleAddSymptom = (values) => {
-    var bodyFormData = new FormData();
-    bodyFormData.append("name", values.name);
-    bodyFormData.append("type", "symptom");
-    bodyFormData.append("rule", values.rule);
+    var data_json = {
+      name: values.name,
+      type: "symptom",
+      rule: values.rule,
+    };
 
     const requestOptions = {
       method: "POST",
       url: urlAPI + `/illnesses`,
-      data: bodyFormData,
+      headers: { "Content-Type": "application/json" },
+      data: JSON.stringify(data_json),
     };
 
     axios(requestOptions)
@@ -230,7 +234,7 @@ function Symptoms() {
             </div>
             <Modal
               title="Sửa triệu chứng"
-              open={showEdit}
+              visible={showEdit}
               onOk={() => setShowEdit(false)}
               onCancel={() => setShowEdit(false)}
               footer={null}
