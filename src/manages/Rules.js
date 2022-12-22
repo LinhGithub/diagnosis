@@ -1,6 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { Typography, Button, Modal, Form, Spin } from "antd";
-import { Space, Card, List, message, Popconfirm, Select } from "antd";
+import {
+  Space,
+  Card,
+  List,
+  message,
+  Popconfirm,
+  Select,
+  Pagination,
+} from "antd";
 import {
   AlertOutlined,
   EditOutlined,
@@ -9,26 +17,37 @@ import {
   InboxOutlined,
 } from "@ant-design/icons";
 
-import axios from "axios";
+import axiosApi from "../configs/auth/axiosApi";
 
-import { urlAPI } from "../material/Config";
+import { urlAPI } from "../settings/Config";
 
 const { Paragraph } = Typography;
 // const { Meta } = Card;
 const { Option } = Select;
 
+const layout = {
+  labelCol: { span: 7 },
+  wrapperCol: { span: 16 },
+};
+
 function Rules() {
+  const token = localStorage.getItem("token");
   const [formAdd] = Form.useForm();
   const [formEdit] = Form.useForm();
   const [showEdit, setShowEdit] = useState(false);
   const [isReload, setIsReload] = useState(false);
+  const [dataRules, setDataRules] = useState();
+
+  // page
+  const [totalItem, setTotalItem] = useState(1);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(1);
 
   // get name property rules
   const getName = (id) => {
     var find = dataIllnesses.find((item) => item._id === id);
     return find?.name ? find?.name : "";
   };
-  // ===
 
   // get string symptom
   const stringSymptom = (symptom) => {
@@ -42,10 +61,10 @@ function Rules() {
   const appendOptionsSymptoms = () => {
     const requestOptions = {
       method: "GET",
-      url: urlAPI + `/illnesses?type=symptom&rule=both`,
+      url: urlAPI + `illnesses?type=symptom&rule=both`,
     };
 
-    axios(requestOptions)
+    axiosApi(requestOptions)
       .then((res) => {
         const data = res.data;
         setOptionsSymptoms(data.results);
@@ -75,15 +94,18 @@ function Rules() {
     if (ruleSelect) {
       const requestOptions = {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        url: urlAPI + `/rules/${ruleSelect._id}`,
+        headers: {
+          "Content-Type": "application/json",
+          x_authorization: token,
+        },
+        url: urlAPI + `rules/${ruleSelect._id}`,
         data: JSON.stringify({
           symptoms: values.symptoms,
           illnesses_id: values.illness,
         }),
       };
 
-      axios(requestOptions)
+      axiosApi(requestOptions)
         .then((res) => {
           const data = res.data;
           if (data.code === 200) {
@@ -106,15 +128,26 @@ function Rules() {
   const handleDeleteItem = (id) => {
     const requestOptions = {
       method: "DELETE",
-      url: urlAPI + `/rules/${id}`,
+      headers: {
+        "Content-Type": "application/json",
+        x_authorization: token,
+      },
+      url: urlAPI + `rules/${id}`,
     };
 
-    axios(requestOptions)
+    axiosApi(requestOptions)
       .then((res) => {
         const data = res.data;
         if (data.code === 200) {
           message.success(data.msg);
-          setIsReload(!isReload);
+          if (Array.isArray(dataRules) && dataRules.length) {
+            let len = dataRules.length - 1;
+            if (len === 0) {
+              setPage(1);
+            } else {
+              setIsReload(!isReload);
+            }
+          }
         } else {
           message.warning(data.msg);
         }
@@ -128,15 +161,18 @@ function Rules() {
   const handleAddRules = (values) => {
     const requestOptions = {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      url: urlAPI + `/rules`,
+      headers: {
+        "Content-Type": "application/json",
+        x_authorization: token,
+      },
+      url: urlAPI + `rules`,
       data: JSON.stringify({
         symptoms: values.symptoms,
         illnesses_id: values.illness,
       }),
     };
 
-    axios(requestOptions)
+    axiosApi(requestOptions)
       .then((res) => {
         const data = res.data;
         if (data.code === 200) {
@@ -154,17 +190,20 @@ function Rules() {
   };
 
   // -get all rules
-  const [dataRules, setDataRules] = useState();
+
   const appendData = () => {
     const requestOptions = {
       method: "GET",
-      url: urlAPI + `/rules`,
+      url: urlAPI + `rules?page=${page}&page_size=${pageSize}`,
     };
 
-    axios(requestOptions)
+    axiosApi(requestOptions)
       .then((res) => {
         const data = res.data;
-        setDataRules(data.results);
+        if (data.code === 200) {
+          setDataRules(data.results);
+          setTotalItem(data.total);
+        }
       })
       .catch((error) => {
         message.error("Kết nối thất bại");
@@ -173,7 +212,7 @@ function Rules() {
 
   useEffect(() => {
     appendData();
-  }, [isReload]);
+  }, [isReload, page]);
   // ===
 
   // config select symptom
@@ -208,10 +247,10 @@ function Rules() {
   const appendDataIllness = () => {
     const requestOptions = {
       method: "GET",
-      url: urlAPI + `/illnesses`,
+      url: urlAPI + `illnesses`,
     };
 
-    axios(requestOptions)
+    axiosApi(requestOptions)
       .then((res) => {
         const data = res.data;
         setDataIllnesses(data.results);
@@ -230,10 +269,10 @@ function Rules() {
   const appendOptionsIllness = () => {
     const requestOptions = {
       method: "GET",
-      url: urlAPI + `/illnesses?type=illness&rule=both`,
+      url: urlAPI + `illnesses?type=illness&rule=both`,
     };
 
-    axios(requestOptions)
+    axiosApi(requestOptions)
       .then((res) => {
         const data = res.data;
         setOptionsIllness(data.results);
@@ -279,49 +318,131 @@ function Rules() {
       <Typography.Title level={4}>Quản lý danh sách luật</Typography.Title>
       <div className="md:flex">
         <div className="flex-1 p-2">
+          <Card className="">
+            <Typography.Title level={5}>Thêm mới</Typography.Title>
+            <div>
+              <Form
+                {...layout}
+                form={formAdd}
+                wrapperCol={{ offset: 1 }}
+                onFinish={handleAddRules}
+              >
+                <Form.Item
+                  rules={[
+                    {
+                      required: true,
+                      message: "Không được để trống",
+                    },
+                  ]}
+                  name="symptoms"
+                  label="Lựa chọn triệu chứng"
+                >
+                  <Select
+                    {...selectProps}
+                    optionFilterProp="children"
+                    filterSort={(optionA, optionB) =>
+                      optionA.children
+                        .toLowerCase()
+                        .localeCompare(optionB.children.toLowerCase())
+                    }
+                  >
+                    {optionsSymptoms.map((item) => (
+                      <Option key={item._id} value={item._id}>
+                        {item.name}
+                      </Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+                <Form.Item
+                  rules={[
+                    {
+                      required: true,
+                      message: "Không được để trống",
+                    },
+                  ]}
+                  name="illness"
+                  label="Lựa chọn bệnh"
+                >
+                  <Select
+                    {...selectPropsIllness}
+                    showSearch
+                    optionFilterProp="children"
+                    filterSort={(optionA, optionB) =>
+                      optionA.children
+                        .toLowerCase()
+                        .localeCompare(optionB.children.toLowerCase())
+                    }
+                  >
+                    {optionsIllness.map((item) => (
+                      <Option key={item._id} value={item._id}>
+                        {item.name}
+                      </Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+                <Form.Item className="md:flex justify-end">
+                  <Button type="primary" htmlType="submit">
+                    Thêm
+                  </Button>
+                </Form.Item>
+              </Form>
+            </div>
+          </Card>
+        </div>
+        <div className="flex-1 p-2">
           <Card>
             <Typography.Title level={5}>Danh sách</Typography.Title>
             <div className="h-[65vh] overflow-y-auto scrollbar p-3">
               {dataRules !== undefined ? (
                 dataRules.length ? (
-                  <List>
-                    {dataRules.map((item) => (
-                      <List.Item key={item._id}>
-                        <List.Item.Meta
-                          title={
-                            <div className="md:flex justify-between">
-                              <div className="mb-4">
-                                <AlertOutlined className="mr-2" />
-                                {stringSymptom(item.symptoms)}
-                                {" => "} {getName(item.illnesses_id)}
-                              </div>
-                              <Space>
-                                <Button
-                                  shape="circle"
-                                  icon={<EditOutlined />}
-                                  onClick={() => handleGetItem(item)}
-                                />
-
-                                <Popconfirm
-                                  placement="top"
-                                  title="Bạn có chắc chắn muốn xóa?"
-                                  onConfirm={() => handleDeleteItem(item._id)}
-                                  okText="Đồng ý"
-                                  cancelText="Không"
-                                >
+                  <div>
+                    <List>
+                      {dataRules.map((item) => (
+                        <List.Item key={item._id}>
+                          <List.Item.Meta
+                            title={
+                              <div className="md:flex justify-between">
+                                <div className="mb-4">
+                                  <AlertOutlined className="mr-2" />
+                                  {stringSymptom(item.symptoms)}
+                                  {" => "} {getName(item.illnesses_id)}
+                                </div>
+                                <Space>
                                   <Button
                                     shape="circle"
-                                    danger
-                                    icon={<DeleteOutlined />}
+                                    icon={<EditOutlined />}
+                                    onClick={() => handleGetItem(item)}
                                   />
-                                </Popconfirm>
-                              </Space>
-                            </div>
-                          }
-                        />
-                      </List.Item>
-                    ))}
-                  </List>
+
+                                  <Popconfirm
+                                    placement="top"
+                                    title="Bạn có chắc chắn muốn xóa?"
+                                    onConfirm={() => handleDeleteItem(item._id)}
+                                    okText="Đồng ý"
+                                    cancelText="Không"
+                                  >
+                                    <Button
+                                      shape="circle"
+                                      danger
+                                      icon={<DeleteOutlined />}
+                                    />
+                                  </Popconfirm>
+                                </Space>
+                              </div>
+                            }
+                          />
+                        </List.Item>
+                      ))}
+                    </List>
+                    <div className="absolute bottom-0 left-0 right-0 mb-2 text-center">
+                      <Pagination
+                        total={totalItem}
+                        defaultPageSize={pageSize}
+                        onChange={(pageNumber) => setPage(pageNumber)}
+                        defaultCurrent={1}
+                      />
+                    </div>
+                  </div>
                 ) : (
                   <div className="text-center mt-5">
                     <Paragraph>Không có dữ liệu nào</Paragraph>
@@ -344,9 +465,10 @@ function Rules() {
               onOk={() => setShowEdit(false)}
               onCancel={() => setShowEdit(false)}
               footer={null}
+              width={600}
               forceRender
             >
-              <Form form={formEdit} onFinish={handelUpdateIllness}>
+              <Form {...layout} form={formEdit} onFinish={handelUpdateIllness}>
                 <Form.Item
                   rules={[
                     {
@@ -413,77 +535,6 @@ function Rules() {
                 </Form.Item>
               </Form>
             </Modal>
-          </Card>
-        </div>
-        <div className="flex-1 p-2">
-          <Card className="">
-            <Typography.Title level={5}>Thêm mới</Typography.Title>
-            <div>
-              <Form
-                form={formAdd}
-                wrapperCol={{ offset: 1 }}
-                onFinish={handleAddRules}
-              >
-                <Form.Item
-                  rules={[
-                    {
-                      required: true,
-                      message: "Không được để trống",
-                    },
-                  ]}
-                  name="symptoms"
-                  label="Lựa chọn triệu chứng"
-                >
-                  <Select
-                    {...selectProps}
-                    optionFilterProp="children"
-                    filterSort={(optionA, optionB) =>
-                      optionA.children
-                        .toLowerCase()
-                        .localeCompare(optionB.children.toLowerCase())
-                    }
-                  >
-                    {optionsSymptoms.map((item) => (
-                      <Option key={item._id} value={item._id}>
-                        {item.name}
-                      </Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-                <Form.Item
-                  rules={[
-                    {
-                      required: true,
-                      message: "Không được để trống",
-                    },
-                  ]}
-                  name="illness"
-                  label="Lựa chọn bệnh"
-                >
-                  <Select
-                    {...selectPropsIllness}
-                    showSearch
-                    optionFilterProp="children"
-                    filterSort={(optionA, optionB) =>
-                      optionA.children
-                        .toLowerCase()
-                        .localeCompare(optionB.children.toLowerCase())
-                    }
-                  >
-                    {optionsIllness.map((item) => (
-                      <Option key={item._id} value={item._id}>
-                        {item.name}
-                      </Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-                <Form.Item className="md:flex justify-end">
-                  <Button type="primary" htmlType="submit">
-                    Thêm
-                  </Button>
-                </Form.Item>
-              </Form>
-            </div>
           </Card>
         </div>
       </div>

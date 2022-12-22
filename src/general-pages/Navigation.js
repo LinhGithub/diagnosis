@@ -11,13 +11,18 @@ import {
   LogoutOutlined,
   UserOutlined,
   EnvironmentOutlined,
+  ExclamationCircleFilled,
 } from "@ant-design/icons";
-import { Layout, Menu, Image } from "antd";
+import { Layout, Menu, Image, Modal } from "antd";
 import React, { useEffect, useState } from "react";
 import "../App.css";
 import { useNavigate, useLocation } from "react-router-dom";
+import Cookies from "universal-cookie";
+import { isAuth } from "../settings/utils";
 
 import myLogo from "../assets/images/unnamed.png";
+
+const { confirm } = Modal;
 
 const { Sider } = Layout;
 const ListRoutes = [
@@ -34,6 +39,7 @@ const ListRoutes = [
 ];
 
 function Navigation({ collapsed, setCollapsed }) {
+  const cookies = new Cookies();
   const location = useLocation();
   const navigate = useNavigate();
   const pathname = location.pathname.replace("/", "");
@@ -41,7 +47,6 @@ function Navigation({ collapsed, setCollapsed }) {
     ListRoutes.includes(pathname) ? pathname : "overview"
   );
 
-  const [checkLogin, setCheckLogin] = useState(localStorage.getItem("token"));
   const [optionsTab, setOptionsTab] = useState([
     {
       key: "overview",
@@ -80,21 +85,9 @@ function Navigation({ collapsed, setCollapsed }) {
       hidden: true,
     },
     {
-      key: "signin",
-      icon: <LoginOutlined />,
-      label: "Sign In",
-      hidden: false,
-    },
-    {
       key: "profile",
       icon: <UserOutlined />,
       label: "Profile",
-      hidden: true,
-    },
-    {
-      key: "signout",
-      icon: <LogoutOutlined />,
-      label: "Sign Out",
       hidden: true,
     },
     {
@@ -103,28 +96,38 @@ function Navigation({ collapsed, setCollapsed }) {
       label: "Bản đồ",
       hidden: false,
     },
+    {
+      key: "signin",
+      icon: <LoginOutlined />,
+      label: "Sign In",
+      hidden: false,
+    },
+    {
+      key: "signout",
+      icon: <LogoutOutlined />,
+      label: "Sign Out",
+      hidden: true,
+    },
   ]);
 
   const mockupSignin = () => {
     var tabs = [];
-    if (checkLogin) {
+    if (isAuth()) {
       var url = location.pathname.split("/");
-      var index = optionsTab.findIndex(({ key }) => key === "chat");
-      if (index) {
-        tabs = optionsTab.map((item) => {
-          if (
-            ["illnesses", "rules", "symptoms", "signout", "profile"].includes(
-              item.key
-            )
-          ) {
-            item.hidden = false;
-          }
-          if (["signin"].includes(item.key)) {
-            item.hidden = true;
-          }
-          return item;
-        });
-      }
+      tabs = optionsTab.map((item) => {
+        if (
+          ["illnesses", "rules", "symptoms", "signout", "profile"].includes(
+            item.key
+          )
+        ) {
+          item.hidden = false;
+        }
+        if (["signin"].includes(item.key)) {
+          item.hidden = true;
+        }
+        return item;
+      });
+
       if (url[1] === "signin") {
         navigate("profile");
         setKeyDefault("profile");
@@ -146,51 +149,56 @@ function Navigation({ collapsed, setCollapsed }) {
         }
         return item;
       });
-      setKeyDefault("overview");
-      navigate("overview");
     }
     setOptionsTab(tabs);
   };
 
   useEffect(() => {
     mockupSignin();
-  }, [checkLogin]);
+    setKeyDefault(pathname);
+  }, [pathname]);
 
   const handleChangeTab = (option) => {
-    var checkToken = checkLogin;
     if (option.key === "signout") {
-      localStorage.removeItem("token");
-      checkToken = undefined;
-      setCheckLogin();
-    } else if (option.key === "signin") {
-      var token = "12345";
-      localStorage.setItem("token", token);
-      checkToken = token;
-    }
-
-    if (checkToken) {
-      setKeyDefault(option.key);
-      navigate(option.key);
+      confirm({
+        title: "Bạn chắc chắn muốn đăng xuất?",
+        icon: <ExclamationCircleFilled />,
+        content: "Bạn sẽ phải đăng nhập lại để sử dụng.",
+        okText: "Đăng xuất",
+        cancelText: "Hủy",
+        onOk() {
+          localStorage.clear();
+          cookies.remove("refreshToken");
+          mockupSignin();
+          setKeyDefault("signin");
+          navigate("/signin");
+        },
+        onCancel() {},
+      });
     } else {
-      if (
-        ![
-          "overview",
-          "diagnosis",
-          "chat",
-          "signin",
-          "signout",
-          "profile",
-          "map",
-        ].includes(option.key)
-      ) {
-        setKeyDefault("overview");
-        navigate("overview");
-      } else {
+      if (isAuth()) {
         setKeyDefault(option.key);
         navigate(option.key);
+      } else {
+        if (
+          ![
+            "/overview",
+            "/diagnosis",
+            "/chat",
+            "/signin",
+            "/signout",
+            "/profile",
+            "/map",
+          ].includes("/" + option.key)
+        ) {
+          navigate("/overview");
+          setKeyDefault("overview");
+        } else {
+          navigate(option.key);
+          setKeyDefault(option.key);
+        }
       }
     }
-    setCheckLogin(checkToken);
   };
 
   return (

@@ -5,18 +5,18 @@ import { Typography, Button } from "antd";
 import { Select, Space, Card, Avatar, List, message, Spin } from "antd";
 import myLogo from "../assets/images/unnamed.png";
 
-import axios from "axios";
+import axiosApi from "../configs/auth/axiosApi";
 
-import { urlAPI } from "../material/Config";
+import { urlAPI } from "../settings/Config";
 
 const { Paragraph } = Typography;
 const { Meta } = Card;
 const { Option } = Select;
 
 const listFeedback = {
-  0: "Chúc mừng bạn, bạn chỉ có những triệu chứng đó thôi.",
+  0: "Đó chỉ là những triệu chứng bình thường. Hãy chăm sóc bản thân nhiều hơn.",
   1: "Thật may, những triệu chứng của bạn không đang lo ngại. Hãy chăm sóc bản thân thật tốt.",
-  2: "Triệu chứng của bạn chưa đủ để chẩn đoán, hoặc bạn chỉ có những dấu hiệu làm nền lên bệnh. Hãy chăm sóc bản thân nhiều hơn.",
+  2: "Triệu chứng của bạn chưa đủ để chẩn đoán. Hãy chăm sóc bản thân nhiều hơn.",
   3: "Bạn đang rất lo lắng với những triệu chứng mà bạn đang gặp phải. Đừng lo đó chỉ là nhưng dấu hiệu nhỏ, hãy để ý bản thân nhiều hơn",
 };
 
@@ -50,10 +50,10 @@ const Diagnosis = () => {
   const appendData = () => {
     const requestOptions = {
       method: "GET",
-      url: urlAPI + `/illnesses?type=symptom&rule=both`,
+      url: urlAPI + `illnesses?type=symptom&rule=both`,
     };
 
-    axios(requestOptions)
+    axiosApi(requestOptions)
       .then((res) => {
         const data = res.data;
         setDataSymptoms(data.results);
@@ -76,11 +76,11 @@ const Diagnosis = () => {
       enterLoading(0);
       const requestOptions = {
         method: "POST",
-        url: urlAPI + `/diagnosis`,
+        url: urlAPI + `diagnosis`,
         headers: { "Content-Type": "application/json" },
         data: JSON.stringify({ symptoms: selectSymptom }),
       };
-      axios(requestOptions)
+      axiosApi(requestOptions)
         .then((res) => {
           const data = res.data;
           setTimeout(() => {

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Typography, Button, Modal, Form, Input, Spin, Select } from "antd";
-import { Space, Card, List, message, Popconfirm } from "antd";
+import { Space, Card, List, message, Popconfirm, Pagination } from "antd";
 import {
   AlertOutlined,
   EditOutlined,
@@ -9,23 +9,33 @@ import {
   InboxOutlined,
 } from "@ant-design/icons";
 
-import { urlAPI } from "../material/Config";
-
-import axios from "axios";
+import axiosApi from "../configs/auth/axiosApi";
 
 const { Paragraph } = Typography;
 // const { Meta } = Card;
 const { Option } = Select;
 
+const layout = {
+  labelCol: { span: 4 },
+  wrapperCol: { span: 19 },
+};
+
 function Illnesses() {
+  const token = localStorage.getItem("token");
   const [formAdd] = Form.useForm();
   const [formEdit] = Form.useForm();
   const [showEdit, setShowEdit] = useState(false);
   const [isReload, setIsReload] = useState(false);
 
+  // page
+  const [totalItem, setTotalItem] = useState(1);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
   // get illness
   const [dataIllnesses, setDataIllnesses] = useState();
-  // -get item illness
+
+  // get illness select
   const [illnessesSelect, setIllnessesSelect] = useState();
   const handleGetItem = (item) => {
     setIllnessesSelect(item);
@@ -44,12 +54,15 @@ function Illnesses() {
 
       const requestOptions = {
         method: "PUT",
-        url: urlAPI + `/illnesses/${illnessesSelect._id}`,
-        headers: { "Content-Type": "application/json" },
+        url: `illnesses/${illnessesSelect._id}`,
+        headers: {
+          "Content-Type": "application/json",
+          x_authorization: token,
+        },
         data: JSON.stringify(data_json),
       };
 
-      axios(requestOptions)
+      axiosApi(requestOptions)
         .then((res) => {
           const data = res.data;
           if (data.code === 200) {
@@ -72,15 +85,26 @@ function Illnesses() {
   const handleDeleteItem = (id) => {
     const requestOptions = {
       method: "DELETE",
-      url: urlAPI + `/illnesses/${id}`,
+      headers: {
+        "Content-Type": "application/json",
+        x_authorization: token,
+      },
+      url: `illnesses/${id}`,
     };
 
-    axios(requestOptions)
+    axiosApi(requestOptions)
       .then((res) => {
         const data = res.data;
         if (data.code === 200) {
           message.success(data.msg);
-          setIsReload(!isReload);
+          if (Array.isArray(dataIllnesses) && dataIllnesses.length) {
+            let len = dataIllnesses.length - 1;
+            if (len === 0) {
+              setPage(1);
+            } else {
+              setIsReload(!isReload);
+            }
+          }
         } else {
           message.warning(data.msg);
         }
@@ -107,12 +131,15 @@ function Illnesses() {
 
     const requestOptions = {
       method: "POST",
-      url: urlAPI + `/illnesses`,
-      headers: { "Content-Type": "application/json" },
+      url: `illnesses`,
+      headers: {
+        "Content-Type": "application/json",
+        x_authorization: token,
+      },
       data: JSON.stringify(data_json),
     };
 
-    axios(requestOptions)
+    axiosApi(requestOptions)
       .then((res) => {
         const data = res.data;
         if (data.code === 200) {
@@ -131,13 +158,16 @@ function Illnesses() {
   const appendData = () => {
     const requestOptions = {
       method: "GET",
-      url: urlAPI + `/illnesses?type=illness`,
+      url: `illnesses?type=illness&page=${page}&page_size=${pageSize}`,
     };
 
-    axios(requestOptions)
+    axiosApi(requestOptions)
       .then((res) => {
         const data = res.data;
-        setDataIllnesses(data.results);
+        if (data.code === 200) {
+          setDataIllnesses(data.results);
+          setTotalItem(data.total);
+        }
       })
       .catch((error) => {
         message.error("Kết nối thất bại");
@@ -146,7 +176,7 @@ function Illnesses() {
 
   useEffect(() => {
     appendData();
-  }, [isReload]);
+  }, [isReload, page]);
   // ===
 
   // config select rule
@@ -174,48 +204,109 @@ function Illnesses() {
       <Typography.Title level={4}>Quản lý danh sách bệnh</Typography.Title>
       <div className="md:flex">
         <div className="flex-1 p-2">
+          <Card className="">
+            <Typography.Title level={5}>Thêm mới</Typography.Title>
+            <div>
+              <Form {...layout} form={formAdd} onFinish={handleAddIllness}>
+                <Form.Item
+                  rules={[
+                    {
+                      required: true,
+                      message: "Không được để trống",
+                    },
+                  ]}
+                  name="name"
+                  label="Tên bệnh"
+                >
+                  <Input placeholder="Nhập tên bệnh" />
+                </Form.Item>
+
+                <Form.Item
+                  rules={[
+                    {
+                      required: true,
+                      message: "Không được để trống",
+                    },
+                  ]}
+                  name="rule"
+                  label="Luật"
+                >
+                  <Select
+                    {...selectProps}
+                    optionFilterProp="children"
+                    filterSort={(optionA, optionB) =>
+                      optionA.children
+                        .toLowerCase()
+                        .localeCompare(optionB.children.toLowerCase())
+                    }
+                  >
+                    <Option value="only">Chỉ là bệnh</Option>
+                    <Option value="both">Vừa là bệnh vừa là triệu chứng</Option>
+                  </Select>
+                </Form.Item>
+
+                <Form.Item className="md:flex justify-end">
+                  <Button type="primary" htmlType="submit">
+                    Thêm
+                  </Button>
+                </Form.Item>
+              </Form>
+            </div>
+          </Card>
+        </div>
+        <div className="flex-1 p-2">
           <Card>
             <Typography.Title level={5}>Danh sách</Typography.Title>
             <div className="h-[65vh] overflow-y-auto scrollbar p-3">
               {dataIllnesses !== undefined ? (
                 dataIllnesses.length ? (
-                  <List>
-                    {dataIllnesses.map((item) => (
-                      <List.Item key={item._id}>
-                        <List.Item.Meta
-                          title={
-                            <div className="md:flex justify-between">
-                              <div className="mb-4">
-                                <AlertOutlined className="mr-2" />
-                                {item.name}
-                              </div>
-                              <Space>
-                                <Button
-                                  shape="circle"
-                                  icon={<EditOutlined />}
-                                  onClick={() => handleGetItem(item)}
-                                />
-
-                                <Popconfirm
-                                  placement="top"
-                                  title="Bạn có chắc chắn muốn xóa?"
-                                  onConfirm={() => handleDeleteItem(item._id)}
-                                  okText="Đồng ý"
-                                  cancelText="Không"
-                                >
+                  <div>
+                    <List>
+                      {dataIllnesses.map((item) => (
+                        <List.Item key={item._id}>
+                          <List.Item.Meta
+                            title={
+                              <div className="md:flex justify-between">
+                                <div className="mb-4">
+                                  <AlertOutlined className="mr-2" />
+                                  {item.name}
+                                </div>
+                                <Space>
                                   <Button
                                     shape="circle"
-                                    danger
-                                    icon={<DeleteOutlined />}
+                                    icon={<EditOutlined />}
+                                    onClick={() => handleGetItem(item)}
                                   />
-                                </Popconfirm>
-                              </Space>
-                            </div>
-                          }
-                        />
-                      </List.Item>
-                    ))}
-                  </List>
+
+                                  <Popconfirm
+                                    placement="top"
+                                    title="Bạn có chắc chắn muốn xóa?"
+                                    onConfirm={() => handleDeleteItem(item._id)}
+                                    okText="Đồng ý"
+                                    cancelText="Không"
+                                  >
+                                    <Button
+                                      shape="circle"
+                                      danger
+                                      icon={<DeleteOutlined />}
+                                    />
+                                  </Popconfirm>
+                                </Space>
+                              </div>
+                            }
+                          />
+                        </List.Item>
+                      ))}
+                    </List>
+                    <div className="absolute bottom-0 left-0 right-0 mb-2 text-center">
+                      <Pagination
+                        total={totalItem}
+                        defaultPageSize={pageSize}
+                        onChange={(pageNumber) => setPage(pageNumber)}
+                        defaultCurrent={1}
+                      />
+                    </div>
+                  </div>
                 ) : (
                   <div className="text-center mt-5">
                     <Paragraph>Không có dữ liệu nào</Paragraph>
@@ -232,6 +323,7 @@ function Illnesses() {
                 </div>
               )}
             </div>
+
             <Modal
               title="Sửa bệnh"
               visible={showEdit}
@@ -240,7 +332,7 @@ function Illnesses() {
               footer={null}
               forceRender
             >
-              <Form form={formEdit} onFinish={handelUpdateIllness}>
+              <Form {...layout} form={formEdit} onFinish={handelUpdateIllness}>
                 <Form.Item
                   rules={[
                     {
@@ -291,57 +383,6 @@ function Illnesses() {
                 </Form.Item>
               </Form>
             </Modal>
-          </Card>
-        </div>
-        <div className="flex-1 p-2">
-          <Card className="">
-            <Typography.Title level={5}>Thêm mới</Typography.Title>
-            <div>
-              <Form form={formAdd} onFinish={handleAddIllness}>
-                <Form.Item
-                  rules={[
-                    {
-                      required: true,
-                      message: "Không được để trống",
-                    },
-                  ]}
-                  name="name"
-                  label="Tên bệnh"
-                >
-                  <Input placeholder="Nhập tên bệnh" />
-                </Form.Item>
-
-                <Form.Item
-                  rules={[
-                    {
-                      required: true,
-                      message: "Không được để trống",
-                    },
-                  ]}
-                  name="rule"
-                  label="Luật"
-                >
-                  <Select
-                    {...selectProps}
-                    optionFilterProp="children"
-                    filterSort={(optionA, optionB) =>
-                      optionA.children
-                        .toLowerCase()
-                        .localeCompare(optionB.children.toLowerCase())
-                    }
-                  >
-                    <Option value="only">Chỉ là bệnh</Option>
-                    <Option value="both">Vừa là bệnh vừa là triệu chứng</Option>
-                  </Select>
-                </Form.Item>
-
-                <Form.Item className="md:flex justify-end">
-                  <Button type="primary" htmlType="submit">
-                    Thêm
-                  </Button>
-                </Form.Item>
-              </Form>
-            </div>
           </Card>
         </div>
       </div>
