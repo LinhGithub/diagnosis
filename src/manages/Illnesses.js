@@ -11,6 +11,7 @@ import {
 
 import axiosApi from "../configs/auth/axiosApi";
 
+const { Search } = Input;
 const { Paragraph } = Typography;
 // const { Meta } = Card;
 const { Option } = Select;
@@ -26,6 +27,7 @@ function Illnesses() {
   const [formEdit] = Form.useForm();
   const [showEdit, setShowEdit] = useState(false);
   const [isReload, setIsReload] = useState(false);
+  const [nameSearch, setNameSearch] = useState("");
 
   // page
   const [totalItem, setTotalItem] = useState(1);
@@ -100,7 +102,11 @@ function Illnesses() {
           if (Array.isArray(dataIllnesses) && dataIllnesses.length) {
             let len = dataIllnesses.length - 1;
             if (len === 0) {
-              setPage(1);
+              if (page === 1) {
+                setIsReload(!isReload);
+              } else {
+                setPage(1);
+              }
             } else {
               setIsReload(!isReload);
             }
@@ -158,7 +164,7 @@ function Illnesses() {
   const appendData = () => {
     const requestOptions = {
       method: "GET",
-      url: `illnesses?type=illness&page=${page}&page_size=${pageSize}`,
+      url: `illnesses?type=illness&page=${page}&page_size=${pageSize}&name=${nameSearch}`,
     };
 
     axiosApi(requestOptions)
@@ -176,7 +182,7 @@ function Illnesses() {
 
   useEffect(() => {
     appendData();
-  }, [isReload, page]);
+  }, [isReload, page, nameSearch]);
   // ===
 
   // config select rule
@@ -198,6 +204,8 @@ function Illnesses() {
     ),
   };
   // ===
+
+  const onSearch = (value) => setNameSearch(value);
 
   return (
     <div>
@@ -257,7 +265,14 @@ function Illnesses() {
         <div className="flex-1 p-2">
           <Card>
             <Typography.Title level={5}>Danh sách</Typography.Title>
-            <div className="h-[65vh] overflow-y-auto scrollbar p-3">
+            <Search
+              className="my-6 px-10"
+              allowClear
+              placeholder="Tìm kiếm..."
+              onSearch={onSearch}
+              enterButton
+            />
+            <div className="h-[55vh] overflow-y-auto scrollbar p-3">
               {dataIllnesses !== undefined ? (
                 dataIllnesses.length ? (
                   <div>

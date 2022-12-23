@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Typography, Button, Modal, Form, Spin } from "antd";
+import { Typography, Button, Modal, Form, Spin, Input } from "antd";
 import {
   Space,
   Card,
@@ -19,10 +19,10 @@ import {
 
 import axiosApi from "../configs/auth/axiosApi";
 
-import { urlAPI } from "../settings/Config";
-
 const { Paragraph } = Typography;
 // const { Meta } = Card;
+const { Search } = Input;
+
 const { Option } = Select;
 
 const layout = {
@@ -37,11 +37,12 @@ function Rules() {
   const [showEdit, setShowEdit] = useState(false);
   const [isReload, setIsReload] = useState(false);
   const [dataRules, setDataRules] = useState();
+  const [nameSearch, setNameSearch] = useState("");
 
   // page
   const [totalItem, setTotalItem] = useState(1);
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   // get name property rules
   const getName = (id) => {
@@ -61,7 +62,7 @@ function Rules() {
   const appendOptionsSymptoms = () => {
     const requestOptions = {
       method: "GET",
-      url: urlAPI + `illnesses?type=symptom&rule=both`,
+      url: `illnesses?type=symptom&rule=both`,
     };
 
     axiosApi(requestOptions)
@@ -98,7 +99,7 @@ function Rules() {
           "Content-Type": "application/json",
           x_authorization: token,
         },
-        url: urlAPI + `rules/${ruleSelect._id}`,
+        url: `rules/${ruleSelect._id}`,
         data: JSON.stringify({
           symptoms: values.symptoms,
           illnesses_id: values.illness,
@@ -132,7 +133,7 @@ function Rules() {
         "Content-Type": "application/json",
         x_authorization: token,
       },
-      url: urlAPI + `rules/${id}`,
+      url: `rules/${id}`,
     };
 
     axiosApi(requestOptions)
@@ -143,7 +144,11 @@ function Rules() {
           if (Array.isArray(dataRules) && dataRules.length) {
             let len = dataRules.length - 1;
             if (len === 0) {
-              setPage(1);
+              if (page === 1) {
+                setIsReload(!isReload);
+              } else {
+                setPage(1);
+              }
             } else {
               setIsReload(!isReload);
             }
@@ -165,7 +170,7 @@ function Rules() {
         "Content-Type": "application/json",
         x_authorization: token,
       },
-      url: urlAPI + `rules`,
+      url: `rules`,
       data: JSON.stringify({
         symptoms: values.symptoms,
         illnesses_id: values.illness,
@@ -194,7 +199,7 @@ function Rules() {
   const appendData = () => {
     const requestOptions = {
       method: "GET",
-      url: urlAPI + `rules?page=${page}&page_size=${pageSize}`,
+      url: `rules?page=${page}&page_size=${pageSize}&name=${nameSearch}`,
     };
 
     axiosApi(requestOptions)
@@ -212,7 +217,7 @@ function Rules() {
 
   useEffect(() => {
     appendData();
-  }, [isReload, page]);
+  }, [isReload, page, nameSearch]);
   // ===
 
   // config select symptom
@@ -247,7 +252,7 @@ function Rules() {
   const appendDataIllness = () => {
     const requestOptions = {
       method: "GET",
-      url: urlAPI + `illnesses`,
+      url: `illnesses`,
     };
 
     axiosApi(requestOptions)
@@ -269,7 +274,7 @@ function Rules() {
   const appendOptionsIllness = () => {
     const requestOptions = {
       method: "GET",
-      url: urlAPI + `illnesses?type=illness&rule=both`,
+      url: `illnesses?type=illness&rule=both`,
     };
 
     axiosApi(requestOptions)
@@ -312,6 +317,9 @@ function Rules() {
     ),
   };
   // ===
+
+  // search
+  const onSearch = (value) => setNameSearch(value);
 
   return (
     <div>
@@ -392,7 +400,14 @@ function Rules() {
         <div className="flex-1 p-2">
           <Card>
             <Typography.Title level={5}>Danh sách</Typography.Title>
-            <div className="h-[65vh] overflow-y-auto scrollbar p-3">
+            <Search
+              className="my-6 px-10"
+              allowClear
+              placeholder="Tìm kiếm..."
+              onSearch={onSearch}
+              enterButton
+            />
+            <div className="h-[55vh] overflow-y-auto scrollbar p-3">
               {dataRules !== undefined ? (
                 dataRules.length ? (
                   <div>

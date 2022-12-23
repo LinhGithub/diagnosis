@@ -7,8 +7,6 @@ import myLogo from "../assets/images/unnamed.png";
 
 import axiosApi from "../configs/auth/axiosApi";
 
-import { urlAPI } from "../settings/Config";
-
 const { Paragraph } = Typography;
 const { Meta } = Card;
 const { Option } = Select;
@@ -50,7 +48,7 @@ const Diagnosis = () => {
   const appendData = () => {
     const requestOptions = {
       method: "GET",
-      url: urlAPI + `illnesses?type=symptom&rule=both`,
+      url: `illnesses?type=symptom&rule=both`,
     };
 
     axiosApi(requestOptions)
@@ -76,7 +74,7 @@ const Diagnosis = () => {
       enterLoading(0);
       const requestOptions = {
         method: "POST",
-        url: urlAPI + `diagnosis`,
+        url: `diagnosis`,
         headers: { "Content-Type": "application/json" },
         data: JSON.stringify({ symptoms: selectSymptom }),
       };

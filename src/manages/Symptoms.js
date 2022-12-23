@@ -9,12 +9,11 @@ import {
   InboxOutlined,
 } from "@ant-design/icons";
 
-import { urlAPI } from "../settings/Config";
-
 import axiosApi from "../configs/auth/axiosApi";
 
 const { Paragraph } = Typography;
 // const { Meta } = Card;
+const { Search } = Input;
 const { Option } = Select;
 
 const layout = {
@@ -28,6 +27,7 @@ function Symptoms() {
   const [formEdit] = Form.useForm();
   const [showEdit, setShowEdit] = useState(false);
   const [isReload, setIsReload] = useState(false);
+  const [nameSearch, setNameSearch] = useState("");
 
   // page
   const [totalItem, setTotalItem] = useState(1);
@@ -56,7 +56,7 @@ function Symptoms() {
 
       const requestOptions = {
         method: "PUT",
-        url: urlAPI + `illnesses/${symptomSelect._id}`,
+        url: `illnesses/${symptomSelect._id}`,
         headers: {
           "Content-Type": "application/json",
           x_authorization: token,
@@ -91,7 +91,7 @@ function Symptoms() {
         "Content-Type": "application/json",
         x_authorization: token,
       },
-      url: urlAPI + `illnesses/${id}`,
+      url: `illnesses/${id}`,
     };
 
     axiosApi(requestOptions)
@@ -102,7 +102,11 @@ function Symptoms() {
           if (Array.isArray(dataSymptoms) && dataSymptoms.length) {
             let len = dataSymptoms.length - 1;
             if (len === 0) {
-              setPage(1);
+              if (page === 1) {
+                setIsReload(!isReload);
+              } else {
+                setPage(1);
+              }
             } else {
               setIsReload(!isReload);
             }
@@ -131,7 +135,7 @@ function Symptoms() {
 
     const requestOptions = {
       method: "POST",
-      url: urlAPI + `illnesses`,
+      url: `illnesses`,
       headers: {
         "Content-Type": "application/json",
         x_authorization: token,
@@ -158,7 +162,7 @@ function Symptoms() {
   const appendData = () => {
     const requestOptions = {
       method: "GET",
-      url: urlAPI + `illnesses?type=symptom&page=${page}&page_size=${pageSize}`,
+      url: `illnesses?type=symptom&page=${page}&page_size=${pageSize}&name=${nameSearch}`,
     };
 
     axiosApi(requestOptions)
@@ -176,7 +180,7 @@ function Symptoms() {
 
   useEffect(() => {
     appendData();
-  }, [isReload, page]);
+  }, [isReload, page, nameSearch]);
   // ===
 
   // config select rule
@@ -198,6 +202,9 @@ function Symptoms() {
     ),
   };
   // ===
+
+  // search
+  const onSearch = (value) => setNameSearch(value);
 
   return (
     <div>
@@ -259,7 +266,14 @@ function Symptoms() {
         <div className="flex-1 p-2">
           <Card>
             <Typography.Title level={5}>Danh sách</Typography.Title>
-            <div className="h-[65vh] overflow-y-auto scrollbar p-3">
+            <Search
+              className="my-6 px-10"
+              allowClear
+              placeholder="Tìm kiếm..."
+              onSearch={onSearch}
+              enterButton
+            />
+            <div className="h-[55vh] overflow-y-auto scrollbar p-3">
               {dataSymptoms !== undefined ? (
                 dataSymptoms.length ? (
                   <div>
