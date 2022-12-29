@@ -18,6 +18,7 @@ const IconButton = ({ type }) => {
 
 function CustomSelectMultible({
   ids,
+  symptomAll,
   setSymptomAll,
   setCheckDiagnosis,
   setNumberSelect,
@@ -93,20 +94,25 @@ function CustomSelectMultible({
     if (dataSymptoms.length) {
       setCheckEnd(true);
       if (type === 1) {
-        setCheckDiagnosis(false);
-        setIsClick((prev) => ({ ...prev, right: 1 }));
+        if (symptomAll.length === 0 && selectSymptom.length === 0) {
+          message.warning("Vui lòng chọn triệu chứng mà bạn đang mắc phải.");
+        } else {
+          setCheckDiagnosis(false);
+          setIsClick((prev) => ({ ...prev, right: 1 }));
+          setChecked(true);
+        }
       } else {
         setNumberSelect((prev) => [...prev, prev.length + 1]);
         setIsClick((prev) => ({ ...prev, left: 1 }));
+        setChecked(true);
       }
     } else {
       setCheckDiagnosis(false);
       setIsClick((prev) => ({ ...prev, right: 1 }));
       setCheckEnd(false);
+      setChecked(true);
     }
-
     setSymptomAll((prev) => [...prev, ...selectSymptom]);
-    setChecked(true);
   };
 
   const selectProps = {
@@ -181,8 +187,8 @@ function CustomSelectMultible({
           </List>
         </div>
       </div>
-      {selectSymptom.length ? (
-        <div className="text-center">
+      <div className="text-center">
+        {selectSymptom.length ? (
           <Button
             className="mr-2"
             type="primary"
@@ -192,14 +198,14 @@ function CustomSelectMultible({
             <IconButton type={isClick.left}></IconButton>
             Chọn các triệu chứng liên quan
           </Button>
-          <Button disabled={checked} onClick={() => handleSelectMore(1)}>
-            <IconButton type={isClick.right}></IconButton>
-            Bỏ qua
-          </Button>
-        </div>
-      ) : (
-        <></>
-      )}
+        ) : (
+          <></>
+        )}
+        <Button disabled={checked} onClick={() => handleSelectMore(1)}>
+          <IconButton type={isClick.right}></IconButton>
+          Bỏ qua
+        </Button>
+      </div>
     </div>
   ) : (
     <div className="mb-4 text-center">

@@ -39,9 +39,9 @@ const Diagnosis = () => {
 
   // handle diagnosis
   const handleDiagnosis = () => {
-    onChange(false);
-    setProcessStatus(false);
     if (symptomAll.length) {
+      onChange(false);
+      setProcessStatus(false);
       enterLoading(0);
       const requestOptions = {
         method: "POST",
@@ -98,7 +98,7 @@ const Diagnosis = () => {
   // refresh
   const handleRefresh = () => {
     setCheckDiagnosis(true);
-    setIllnesses([]);
+    setIllnesses();
     setSymptomAll([]);
     setNumberSelect([1]);
     setReFreshSelect(true);
@@ -115,6 +115,7 @@ const Diagnosis = () => {
               <div key={item}>
                 <CustomSelectMultible
                   ids={symptomAll}
+                  symptomAll={symptomAll}
                   setSymptomAll={setSymptomAll}
                   setCheckDiagnosis={setCheckDiagnosis}
                   setNumberSelect={setNumberSelect}
