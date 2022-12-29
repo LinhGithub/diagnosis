@@ -173,6 +173,9 @@ function Illnesses() {
         if (data.code === 200) {
           setDataIllnesses(data.results);
           setTotalItem(data.total);
+          if (page > 1 && data.results.length === 0) {
+            setPage(1);
+          }
         }
       })
       .catch((error) => {
@@ -315,6 +318,7 @@ function Illnesses() {
                     </List>
                     <div className="absolute bottom-0 left-0 right-0 mb-2 text-center">
                       <Pagination
+                        simple={true}
                         total={totalItem}
                         defaultPageSize={pageSize}
                         onChange={(pageNumber) => setPage(pageNumber)}
