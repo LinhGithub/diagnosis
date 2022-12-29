@@ -1,15 +1,16 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 
-import { InboxOutlined, AlertOutlined } from "@ant-design/icons";
+import { SwapRightOutlined, ReloadOutlined } from "@ant-design/icons";
 import { Typography, Button } from "antd";
-import { Select, Space, Card, Avatar, List, message, Spin } from "antd";
+import { Card, Avatar, message, Spin } from "antd";
 import myLogo from "../assets/images/unnamed.png";
 
 import axiosApi from "../configs/auth/axiosApi";
 
+import CustomSelectMultible from "./segments/CustomSelectMultible";
+
 const { Paragraph } = Typography;
 const { Meta } = Card;
-const { Option } = Select;
 
 const listFeedback = {
   0: "Đó chỉ là những triệu chứng bình thường. Hãy chăm sóc bản thân nhiều hơn.",
@@ -19,11 +20,12 @@ const listFeedback = {
 };
 
 const Diagnosis = () => {
-  const [selectSymptom, setSelectSymptom] = useState([]);
-  const [dataSymptoms, setDataSymptoms] = useState([]);
   const [illnesses, setIllnesses] = useState();
-  const [symptomName, setSymptomName] = useState([]);
   const [processStatus, setProcessStatus] = useState(true);
+  const [symptomAll, setSymptomAll] = useState([]);
+  const [checkDiagnosis, setCheckDiagnosis] = useState(true);
+  const [numberSelect, setNumberSelect] = useState([1]);
+  const [reFreshSelect, setReFreshSelect] = useState(false);
 
   // random feedback
   const RandomFeeback = () => {
@@ -35,48 +37,17 @@ const Diagnosis = () => {
   };
   // ===
 
-  // get name symptom
-  useEffect(() => {
-    var symptomNameNew = dataSymptoms.filter((item) =>
-      selectSymptom.includes(item._id)
-    );
-    setSymptomName(symptomNameNew);
-  }, [selectSymptom, dataSymptoms]);
-  // ===
-
-  // get symptom
-  const appendData = () => {
-    const requestOptions = {
-      method: "GET",
-      url: `illnesses?type=symptom&rule=both`,
-    };
-
-    axiosApi(requestOptions)
-      .then((res) => {
-        const data = res.data;
-        setDataSymptoms(data.results);
-      })
-      .catch((error) => {
-        message.error("Kết nối thất bại");
-      });
-  };
-
-  useEffect(() => {
-    appendData();
-  }, []);
-  // ===
-
   // handle diagnosis
   const handleDiagnosis = () => {
     onChange(false);
     setProcessStatus(false);
-    if (selectSymptom.length) {
+    if (symptomAll.length) {
       enterLoading(0);
       const requestOptions = {
         method: "POST",
         url: `diagnosis`,
         headers: { "Content-Type": "application/json" },
-        data: JSON.stringify({ symptoms: selectSymptom }),
+        data: JSON.stringify({ symptoms: symptomAll }),
       };
       axiosApi(requestOptions)
         .then((res) => {
@@ -123,30 +94,13 @@ const Diagnosis = () => {
   const onChange = (checked) => {
     setLoading(!checked);
   };
-  // ===
 
-  const selectProps = {
-    mode: "multiple",
-    style: {
-      width: "100%",
-    },
-    value: selectSymptom,
-    onChange: (newValue) => {
-      onChange(false);
-      setSelectSymptom(newValue);
-    },
-    placeholder: "Chọn triệu chứng...",
-    maxTagCount: "responsive",
-    notFoundContent: (
-      <div className="text-center">
-        <InboxOutlined
-          style={{
-            fontSize: "54px",
-          }}
-        />
-        <Paragraph>Không có kết quả nào</Paragraph>
-      </div>
-    ),
+  // refresh
+  const handleRefresh = () => {
+    setCheckDiagnosis(true);
+    setSymptomAll([]);
+    setNumberSelect([1]);
+    setReFreshSelect(true);
   };
 
   return (
@@ -155,56 +109,26 @@ const Diagnosis = () => {
       <div className="md:flex flex-wrap">
         <div className="flex-1 p-2" span={12}>
           <Card className="mt-2" style={{ minHeight: "70vh" }}>
-            <div>
-              <Typography.Title level={5}>Triệu chứng</Typography.Title>
-              <Space
-                direction="vertical"
-                style={{
-                  width: "100%",
-                }}
-              >
-                <Select
-                  {...selectProps}
-                  optionFilterProp="children"
-                  filterSort={(optionA, optionB) =>
-                    optionA.children
-                      .toLowerCase()
-                      .localeCompare(optionB.children.toLowerCase())
-                  }
-                >
-                  {dataSymptoms.map((item) => (
-                    <Option key={item._id} value={item._id}>
-                      {item.name}
-                    </Option>
-                  ))}
-                </Select>
-              </Space>
-            </div>
-            <div className="mt-5">
-              <div
-                className="overflow-y-auto scrollbar p-4"
-                id="scrollableDiv"
-                style={{
-                  height: 350,
-                  width: "100%",
-                }}
-              >
-                <List>
-                  {symptomName.map((item) => (
-                    <List.Item key={item.name}>
-                      <List.Item.Meta
-                        title={
-                          <div>
-                            <AlertOutlined className="mr-2" />
-                            {item.name}
-                          </div>
-                        }
-                      />
-                    </List.Item>
-                  ))}
-                </List>
+            <Typography.Title level={5}>Triệu chứng</Typography.Title>
+            {numberSelect.map((item, index) => (
+              <div key={item}>
+                <CustomSelectMultible
+                  ids={symptomAll}
+                  setSymptomAll={setSymptomAll}
+                  setCheckDiagnosis={setCheckDiagnosis}
+                  setNumberSelect={setNumberSelect}
+                  reFreshSelect={reFreshSelect}
+                  setReFreshSelect={setReFreshSelect}
+                ></CustomSelectMultible>
+                {index < numberSelect.length - 1 ? (
+                  <Paragraph level={5} className="text-center align-middle">
+                    <SwapRightOutlined /> Chọn thêm các triệu chứng liên quan:
+                  </Paragraph>
+                ) : (
+                  <></>
+                )}
               </div>
-            </div>
+            ))}
           </Card>
         </div>
         <div className="flex-1 p-2" span={12}>
@@ -214,7 +138,7 @@ const Diagnosis = () => {
                 type="primary"
                 onClick={() => handleDiagnosis()}
                 loading={loadings[0]}
-                disabled={selectSymptom.length ? false : true}
+                disabled={checkDiagnosis}
               >
                 Chẩn đoán bệnh
               </Button>
@@ -249,9 +173,8 @@ const Diagnosis = () => {
                       ) : (
                         <div>
                           <Paragraph>
-                            Chọn triệu chứng bệnh của bạn, và nhấn vào nút
-                            "Chuẩn đoán bệnh" để bác sĩ chuẩn đoán về bệnh của
-                            bạn nhé!
+                            Chọn triệu chứng bệnh của bạn, và nhấn vào nút "Chẩn
+                            đoán bệnh" để bác sĩ chuẩn đoán về bệnh của bạn nhé!
                           </Paragraph>
                         </div>
                       )
@@ -270,6 +193,12 @@ const Diagnosis = () => {
                   </div>
                 )}
               </Card>
+            </div>
+
+            <div className="text-center mt-5" span={24}>
+              <Button type="primary" onClick={() => handleRefresh()}>
+                <ReloadOutlined /> Làm mới
+              </Button>
             </div>
           </Card>
         </div>
