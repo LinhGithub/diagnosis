@@ -98,6 +98,7 @@ const Diagnosis = () => {
   // refresh
   const handleRefresh = () => {
     setCheckDiagnosis(true);
+    setIllnesses([]);
     setSymptomAll([]);
     setNumberSelect([1]);
     setReFreshSelect(true);
