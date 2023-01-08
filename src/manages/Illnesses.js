@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Typography, Button, Modal, Form, Input, Spin, Select } from "antd";
 import { Space, Card, List, message, Popconfirm, Pagination } from "antd";
+import { Col, Row } from "antd";
+
 import {
   AlertOutlined,
   EditOutlined,
@@ -10,6 +12,7 @@ import {
 } from "@ant-design/icons";
 
 import axiosApi from "../configs/auth/axiosApi";
+import { urlAPI } from "../settings/Config";
 
 const { Search } = Input;
 const { Paragraph } = Typography;
@@ -210,6 +213,23 @@ function Illnesses() {
 
   const onSearch = (value) => setNameSearch(value);
 
+  // dowload file
+  const handleDowloadFile = () => {
+    console.log("ok");
+    const requestOptions = {
+      method: "GET",
+      url: `illnesses/dowload_file`,
+    };
+
+    axiosApi(requestOptions)
+      .then((res) => {
+        console.log(res);
+      })
+      .catch((error) => {
+        message.error("Kết nối thất bại");
+      });
+  };
+
   return (
     <div>
       <Typography.Title level={4}>Quản lý danh sách bệnh</Typography.Title>
@@ -267,7 +287,24 @@ function Illnesses() {
         </div>
         <div className="flex-1 p-2">
           <Card>
-            <Typography.Title level={5}>Danh sách</Typography.Title>
+            <Row>
+              <Col span={12}>
+                <Typography.Title level={5}>Danh sách</Typography.Title>
+              </Col>
+              <Col span={12}>
+                <Row>
+                  <Col span={3} offset={6}>
+                    <Button type="dashed">Thêm tệp</Button>
+                  </Col>
+                  <Col span={3} offset={6} onClick={handleDowloadFile}>
+                    <a href={urlAPI + "illnesses/dowload_file"}>
+                      <Button>Xuất tệp</Button>
+                    </a>
+                  </Col>
+                </Row>
+              </Col>
+            </Row>
+
             <Search
               className="my-6 px-10"
               allowClear
@@ -280,14 +317,14 @@ function Illnesses() {
                 dataIllnesses.length ? (
                   <div>
                     <List>
-                      {dataIllnesses.map((item) => (
+                      {dataIllnesses.map((item, index) => (
                         <List.Item key={item._id}>
                           <List.Item.Meta
                             title={
                               <div className="md:flex justify-between">
                                 <div className="mb-4">
                                   <AlertOutlined className="mr-2" />
-                                  {item.name}
+                                  {index + 1}. {item.name}
                                 </div>
                                 <Space>
                                   <Button

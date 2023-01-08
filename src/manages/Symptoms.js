@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Typography, Button, Modal, Form, Input, Select } from "antd";
 import { Space, Card, List, message, Popconfirm, Spin, Pagination } from "antd";
+import { Col, Row } from "antd";
+
 import {
   AlertOutlined,
   EditOutlined,
@@ -268,7 +270,22 @@ function Symptoms() {
         </div>
         <div className="flex-1 p-2">
           <Card>
-            <Typography.Title level={5}>Danh sách</Typography.Title>
+            <Row>
+              <Col span={12}>
+                <Typography.Title level={5}>Danh sách</Typography.Title>
+              </Col>
+              <Col span={12}>
+                <Row>
+                  <Col span={3} offset={6}>
+                    <Button type="dashed">Thêm tệp</Button>
+                  </Col>
+                  <Col span={3} offset={6}>
+                    <Button>Xuất tệp</Button>
+                  </Col>
+                </Row>
+              </Col>
+            </Row>
+
             <Search
               className="my-6 px-10"
               allowClear
@@ -281,14 +298,14 @@ function Symptoms() {
                 dataSymptoms.length ? (
                   <div>
                     <List>
-                      {dataSymptoms.map((item) => (
+                      {dataSymptoms.map((item, index) => (
                         <List.Item key={item._id}>
                           <List.Item.Meta
                             title={
                               <div className="md:flex justify-between">
                                 <div className="mb-4">
                                   <AlertOutlined className="mr-2" />
-                                  {item.name}
+                                  {index + 1}. {item.name}
                                 </div>
                                 <Space>
                                   <Button

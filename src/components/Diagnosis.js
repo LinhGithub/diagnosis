@@ -162,8 +162,10 @@ const Diagnosis = () => {
                           <Typography.Title level={5}>
                             Bạn có thể đang mắc các căn bệnh sau:
                           </Typography.Title>
-                          {illnesses.map((item) => (
-                            <Paragraph key={item._id}>{item.name}</Paragraph>
+                          {illnesses.map((item, index) => (
+                            <Paragraph key={item._id}>
+                              {index + 1}. {item.name}
+                            </Paragraph>
                           ))}
                         </div>
                       ) : !loading ? (

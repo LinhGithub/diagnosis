@@ -172,13 +172,13 @@ function CustomSelectMultible({
           }}
         >
           <List>
-            {symptomName.map((item) => (
+            {symptomName.map((item, index) => (
               <List.Item key={item.name}>
                 <List.Item.Meta
                   title={
                     <div>
                       <AlertOutlined className="mr-2" />
-                      {item.name}
+                      {index + 1}. {item.name}
                     </div>
                   }
                 />
