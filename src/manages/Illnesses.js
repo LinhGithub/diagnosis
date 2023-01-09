@@ -215,15 +215,24 @@ function Illnesses() {
 
   // dowload file
   const handleDowloadFile = () => {
-    console.log("ok");
     const requestOptions = {
       method: "GET",
-      url: `illnesses/dowload_file`,
+      url: `illnesses/download_file?type=illness`,
     };
 
     axiosApi(requestOptions)
       .then((res) => {
-        console.log(res);
+        const data = res.data;
+        if (data.code === 200) {
+          let file_name = data.file_name;
+          if (file_name) {
+            window.location.href = urlAPI + "storage/" + file_name;
+          } else {
+            message.error("Không tồn tại tệp.");
+          }
+        } else {
+          message.error("Không tồn tại tệp.");
+        }
       })
       .catch((error) => {
         message.error("Kết nối thất bại");
@@ -296,10 +305,8 @@ function Illnesses() {
                   <Col span={3} offset={6}>
                     <Button type="dashed">Thêm tệp</Button>
                   </Col>
-                  <Col span={3} offset={6} onClick={handleDowloadFile}>
-                    <a href={urlAPI + "illnesses/dowload_file"}>
-                      <Button>Xuất tệp</Button>
-                    </a>
+                  <Col span={3} offset={6}>
+                    <Button onClick={handleDowloadFile}>Xuất tệp</Button>
                   </Col>
                 </Row>
               </Col>

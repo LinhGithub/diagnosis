@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { Typography, Button, Modal, Form, Spin, Input } from "antd";
 import { Col, Row } from "antd";
 
+import { urlAPI } from "../settings/Config";
+
 import {
   Space,
   Card,
@@ -326,6 +328,32 @@ function Rules() {
   // search
   const onSearch = (value) => setNameSearch(value);
 
+  // dowload file
+  const handleDowloadFile = () => {
+    const requestOptions = {
+      method: "GET",
+      url: `illnesses/download_file?type=rule`,
+    };
+
+    axiosApi(requestOptions)
+      .then((res) => {
+        const data = res.data;
+        if (data.code === 200) {
+          let file_name = data.file_name;
+          if (file_name) {
+            window.location.href = urlAPI + "storage/" + file_name;
+          } else {
+            message.error("Không tồn tại tệp.");
+          }
+        } else {
+          message.error("Không tồn tại tệp.");
+        }
+      })
+      .catch((error) => {
+        message.error("Kết nối thất bại");
+      });
+  };
+
   return (
     <div>
       <Typography.Title level={4}>Quản lý danh sách luật</Typography.Title>
@@ -414,7 +442,7 @@ function Rules() {
                     <Button type="dashed">Thêm tệp</Button>
                   </Col>
                   <Col span={3} offset={6}>
-                    <Button>Xuất tệp</Button>
+                    <Button onClick={handleDowloadFile}>Xuất tệp</Button>
                   </Col>
                 </Row>
               </Col>
